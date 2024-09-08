@@ -1,6 +1,6 @@
 "use client";
 
-import { Component, type ReactElement, type ReactNode } from "react";
+import { Component, type ReactElement, type ReactNode } from 'react';
 
 interface ErrorBoundaryBaseState {
   hasError: boolean;
@@ -14,9 +14,10 @@ export interface ErrorBoundaryFallbackParams {
 }
 
 export interface ErrorBoundaryBaseProps {
-  resetQuery?: () => void;
-  fallback?: ReactElement;
+  fallback: ReactElement | ((params: ErrorBoundaryFallbackParams) => ReactElement);
   children: ReactElement;
+  resetQuery?: () => void;
+  onError?: (error: ErrorBoundaryFallbackParams) => void;
 }
 
 class ErrorBoundaryBase extends Component<ErrorBoundaryBaseProps, ErrorBoundaryBaseState> {
@@ -29,7 +30,13 @@ class ErrorBoundaryBase extends Component<ErrorBoundaryBaseProps, ErrorBoundaryB
     return { hasError: true, error: error };
   }
 
-  componentDidCatch(): void {}
+  componentDidCatch(error: Error): void {
+    this.props.onError?.({
+      error: error,
+      resetError: this.resetError,
+      resetErrorWithQuery: this.resetErrorWithQuery,
+    });
+  }
 
   resetError = () => {
     this.setState({ hasError: false, error: null });
@@ -42,7 +49,14 @@ class ErrorBoundaryBase extends Component<ErrorBoundaryBaseProps, ErrorBoundaryB
 
   render(): ReactNode {
     if (this.state.hasError && this.state.error) {
-      const returnElement = this.props.fallback;
+      const returnElement =
+        typeof this.props.fallback === 'function'
+          ? this.props.fallback?.({
+              error: this.state.error,
+              resetError: this.resetError,
+              resetErrorWithQuery: this.resetErrorWithQuery,
+            })
+          : this.props.fallback;
 
       if (!returnElement) {
         return this.props.children;
@@ -54,5 +68,4 @@ class ErrorBoundaryBase extends Component<ErrorBoundaryBaseProps, ErrorBoundaryB
     return this.props.children;
   }
 }
-
 export default ErrorBoundaryBase;

@@ -1,15 +1,14 @@
 "use client";
 
-import { type ErrorBoundaryBaseProps } from "./ErrorBoundaryBase";
-import ErrorBoundaryBase from "./ErrorBoundaryBase";
+import ErrorBoundaryBase, { type ErrorBoundaryBaseProps } from './ErrorBoundaryBase';
 
-import { useQueryErrorResetBoundary } from "@tanstack/react-query";
+import { useQueryErrorResetBoundary } from '@tanstack/react-query';
 
-const ErrorBoundary = ({ fallback, children }: Omit<ErrorBoundaryBaseProps, "resetQuery">) => {
+const ErrorBoundary = ({ fallback, onError, children }: Omit<ErrorBoundaryBaseProps, 'resetQuery'>) => {
   const { reset } = useQueryErrorResetBoundary();
 
   return (
-    <ErrorBoundaryBase fallback={fallback} resetQuery={reset}>
+    <ErrorBoundaryBase fallback={fallback} resetQuery={reset} onError={onError}>
       {children}
     </ErrorBoundaryBase>
   );
